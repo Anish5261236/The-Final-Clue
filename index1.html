@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Final Clue</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #e0e0e0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #050505;
+}
+
+/* BACKGROUND */
+.bg {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  animation: zoomBg 25s infinite alternate ease-in-out;
+  opacity: 1; 
+}
+
+/* ===== START SCREEN ===== */
+#startScreen {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, rgba(0,0,0,0.1), rgba(0,0,0,0.5) 100%);
+  z-index: 10;
+  transition: opacity 1s ease;
+}
+
+.game-title {
+  font-size: 85px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 8px;
+  margin-bottom: 40px;
+  color: #1a120c; 
+  text-align: center;
+  font-weight: 700;
+  text-shadow: 2px 2px 0px rgba(255,255,255,0.8), 
+               -1px -1px 0px rgba(255,255,255,0.8),
+               5px 5px 15px rgba(0,0,0,0.4);
+}
+
+.play-btn {
+  padding: 16px 55px;
+  font-size: 20px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: #2b1f17; 
+  color: #e6d5c3; 
+  border: 2px solid #5a4332;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+.play-btn:hover {
+  background: #423024; 
+  color: #ffffff;
+  border-color: #8b6b50;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.6);
+}
+
+/* ===== GAME LAYOUT (GLASSMORPHISM) ===== */
+.game-section {
+  padding: 50px 8%;
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.game-box {
+  width: 100%;
+  max-width: 900px;
+  padding: 50px;
+  background: rgba(15, 15, 15, 0.65); 
+  backdrop-filter: blur(12px); 
+  -webkit-backdrop-filter: blur(12px); 
+  border: 1px solid rgba(201, 168, 106, 0.3); 
+  border-radius: 12px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+}
+
+#caseTitle {
+  font-size: 50px;
+  font-family: 'Cinzel', serif;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #c9a86a;
+  border-bottom: 1px solid rgba(201, 168, 106, 0.3);
+  padding-bottom: 15px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+#story {
+  font-size: 18px;
+  line-height: 1.8;
+  margin-bottom: 40px;
+  color: #f0f0f0;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+h3 {
+  font-size: 24px;
+  font-family: 'Cinzel', serif;
+  color: #fff;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* SUSPECT ACCUSATION BUTTONS (GLASS STYLE) */
+.suspect-btn {
+  padding: 12px 30px;
+  margin: 0 15px 15px 0;
+  border: 1px solid rgba(201, 168, 106, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.suspect-btn:hover {
+  border-color: #c9a86a;
+  background: rgba(201, 168, 106, 0.2);
+  transform: translateY(-2px);
+}
+
+.suspect-btn.selected {
+  background: #c9a86a;
+  color: #000;
+  border-color: #c9a86a;
+  font-weight: 600;
+  box-shadow: 0 0 15px rgba(201, 168, 106, 0.4);
+}
+
+.submit-btn {
+  margin-top: 30px;
+  padding: 16px 40px;
+  font-size: 18px;
+  font-family: 'Cinzel', serif;
+  background: #ff003c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 4px 15px rgba(255,0,60,0.3);
+}
+
+.submit-btn:hover {
+  background: #d60032;
+  box-shadow: 0 6px 20px rgba(255,0,60,0.6);
+  transform: translateY(-2px);
+}
+
+/* ===== CHAT BOT UI ===== */
+#chatToggle {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #111;
+  border: 2px solid #c9a86a;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(201,168,106,0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s;
+  z-index: 100;
+}
+
+#chatToggle:hover { transform: scale(1.1); }
+#chatToggle img { width: 35px; height: 35px; filter: invert(1); }
+
+#chatBot {
+  position: fixed;
+  bottom: 110px;
+  right: 30px;
+  width: 380px;
+  height: 550px;
+  display: none;
+  flex-direction: column;
+  background: rgba(15, 15, 15, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  border: 1px solid rgba(201,168,106,0.4);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.chat-header {
+  padding: 15px;
+  background: #000;
+  color: #c9a86a;
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-header img { width: 24px; height: 24px; filter: invert(1); }
+
+/* INTERROGATION SELECTOR */
+.suspect-selector {
+  background: #1a1a1a;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chat-suspect-btn {
+  background: #333;
+  color: #aaa;
+  border: 1px solid #555;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.chat-suspect-btn:hover { background: #444; color: #fff; }
+.chat-suspect-btn.active {
+  background: #c9a86a;
+  color: #000;
+  border-color: #c9a86a;
+  font-weight: 600;
+}
+
+#botMessages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.user-msg {
+  align-self: flex-end;
+  background: #333;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 15px 15px 0 15px;
+  max-width: 80%;
+}
+
+.bot-msg {
+  align-self: flex-start;
+  background: rgba(201,168,106,0.1);
+  color: #e0e0e0;
+  border: 1px solid rgba(201,168,106,0.3);
+  padding: 10px 15px;
+  border-radius: 15px 15px 15px 0;
+  max-width: 80%;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.system-msg {
+  align-self: center;
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  margin: 10px 0;
+}
+
+#chatInputArea {
+  display: flex;
+  border-top: 1px solid #333;
+  background: #000;
+}
+
+#chatInputArea input {
+  flex: 1;
+  padding: 15px;
+  background: transparent;
+  color: white;
+  border: none;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+#chatInputArea button {
+  padding: 0 20px;
+  background: #c9a86a;
+  border: none;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#chatInputArea button:hover { background: #e0c085; }
+
+/* ===== RESULT MODAL ===== */
+#resultOverlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+.result-box {
+  background: #111;
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  animation: popIn 0.4s ease-out forwards;
+}
+
+.result-box.correct { border: 2px solid #28a745; box-shadow: 0 0 40px rgba(40, 167, 69, 0.2); }
+.result-box.wrong { border: 2px solid #ff003c; box-shadow: 0 0 40px rgba(255, 0, 60, 0.2); }
+
+.result-title {
+  font-family: 'Cinzel', serif;
+  font-size: 32px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.result-box.correct .result-title { color: #28a745; }
+.result-box.wrong .result-title { color: #ff003c; }
+
+.result-desc {
+  font-size: 16px;
+  color: #ccc;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.result-btn {
+  padding: 14px 30px;
+  font-size: 16px;
+  font-family: 'Cinzel', serif;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+  color: #fff;
+}
+
+.result-box.correct .result-btn { background: #28a745; }
+.result-box.correct .result-btn:hover { background: #218838; }
+.result-box.wrong .result-btn { background: #ff003c; }
+.result-box.wrong .result-btn:hover { background: #d60032; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes glowText {
+  from { text-shadow: 0 0 10px rgba(201,168,106,0.5); }
+  to { text-shadow: 0 0 25px rgba(201,168,106,1); }
+}
+@keyframes zoomBg {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+</style>
+</head>
+
+<body class="landing">
+
+<div id="bg" class="bg"></div>
+
+<div id="startScreen">
+  <div class="start-content">
+    <h1 class="game-title">THE FINAL CLUE</h1>
+    <button class="play-btn" onclick="startGame()">▶ PLAY GAME</button>
+  </div>
+</div>
+
+<div id="chatToggle" onclick="toggleChat()">
+  <img src="./pics/chatbot.png" alt="bot" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgY3Vyc29yPSJwb2ludGVyIj48cGF0aCBkPSJNMjEgMTVWMTRDMTkuODk1NCAxNCAxOSAxMy4xMDU0IDE5IDEyQzE5IDEwLjg5NDYgMTkuODk1NCAxMCAyMSAxMFY5QzIxIDcuODk1NDMgMjAuMTA0NiA3IDE5IDdINUMzLjg5NTQzIDcgMyA3Ljg5NTQzIDMgOVYxMEM0LjEwNDU3IDEwIDUgMTAuODk0NiA1IDEyQzUgMTMuMTA1NCA0LjEwNDU3IDE0IDMgMTRWMTVDMyAxNi4xMDU0IDMuODk1NDMgMTcgNSAxN0gxOUMyMC4xMDQ2IDE3IDIxIDE2LjEwNTQgMjEgMTVWMTVaIi8+PHBhdGggZD0iTTE1IDdWMUMxNSAwLjQ0NzcxNSAxNC41NTIzIDAgMTQgMEgxMEM5LjQ0NzcyIDAgOSAwLjQ0NzcxNSA5IDFWM1Y3Ii8+PHBhdGggZD0iTTkgMTdWMjFDOSAyMS41NTIzIDkuNDQ3NzIgMjIgMTAgMjJIMTRDMTQuNTUyMyAyMiAxNSAyMS41NTIzIDE1IDIxVjE3Ii8+PHBhdGggZD0iTTEwIDExLjVIMTAuMDEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE0IDExLjVIMTQuMDEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+'">
+</div>
+
+<div id="gameScreen" style="display:none;">
+  <div class="game-section">
+    <div class="game-box">
+      <h2 id="caseTitle"></h2>
+      <p id="story"></p>
+      
+      <h3>Accuse a Suspect</h3>
+      <div id="options"></div>
+      
+      <button class="submit-btn" onclick="checkAnswer()">Accuse</button>
+    </div>
+  </div>
+</div>
+
+<div id="chatBot">
+  <div class="chat-header">
+    <img src="./pics/chatbot.png" alt="bot" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTIxIDE1VjE0QzE5Ljg5NTQgMTQgMTkgMTMuMTA1NCAxOSAxMkMxOSAxMC44OTQ2IDE5Ljg5NTQgMTAgMjEgMTBWOUMyMSA3Ljg5NTQzIDIwLjEwNDYgNyAxOSA3SDVDMy44OTU0MyA3IDMgNy44OTU0MyAzIDlWMTBDNC4xMDQ1NyAxMCA1IDEwLjg5NDYgNSAxMkM1IDEzLjEwNTQgNC4xMDQ1NyAxNCAzIDE0VjE1QzMgMTYuMTA1NCAzLjg5NTQzIDE3IDUgMTdIMTlDMjAuMTA0NiAxNyAyMSAxNi4xMDU0IDIxIDE1VjE1WiIvPjwvc3ZnPg=='">
+    <span>Interrogation Room</span>
+  </div>
+  
+  <div id="suspectSelector" class="suspect-selector">
+    </div>
+
+  <div id="botMessages">
+    <div class="system-msg">Select a suspect above to begin interrogation.</div>
+  </div>
+
+  <div id="chatInputArea">
+   <input type="text" id="userInput" placeholder="Ask your question..." autocomplete="off" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMessage(); }">
+    <button onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// ⚠️ PUT YOUR GEMINI API KEY HERE 
+// ==========================================
+const GEMINI_API_KEY = ""; 
+
+
+const cases = [
+{title:"Flight Murder",bg:"./pics/Fatal incident on an airplane aisle.png",story:"The cabin lights flickered as a sudden scream echoed through the silent aircraft. A passenger lay slumped in his seat, his lips turning pale, a half-finished glass of juice slipping from his trembling hands. Within seconds, his body went lifeless, sending panic across the aisle. Blood vessels in his eyes had burst, indicating a fast-acting toxin. Moments before his death, only a few people had interacted with him. With the plane sealed mid-air, the killer had to be someone onboard — someone who struck without being noticed.",suspects:[{name:"Air Hostess",info:"She was moving through the aisle, calmly serving drinks. Witnesses saw her hand the victim a glass just moments before he collapsed, and she was the last known person to interact with him."},{name:"Passenger",info:"Sitting beside the victim, he claims he was asleep. However, turbulence had just occurred, making it unlikely for anyone to remain completely unaware."},{name:"Pilot",info:"Locked inside the cockpit throughout the flight, he had no physical access to passengers or their food and drinks."}],answer:"Air Hostess",explanation:"The poison was delivered through the drink, and only the air hostess served it directly. Her close interaction gave her the perfect chance to administer it unnoticed.",hints:["Poison entered through drink","Who served him?","Focus on direct contact"]},
+{title:"Hotel Room Mystery",bg:"./pics/modern hotel room.png",story:"The room was silent, yet the air felt heavy with something sinister. A businessman was found sprawled on the floor, his face frozen in terror, veins darkened beneath his skin. There were no signs of forced entry, and the door was locked from inside. The only clue — a half-eaten meal on the table. Toxicology reports confirmed lethal poison in his system. With no one entering after dinner, the killer had already done their job before the door ever closed.",suspects:[{name:"Manager",info:"He handled bookings and approvals but never physically entered the room that night. His involvement remained administrative."},{name:"Waiter",info:"He delivered the food directly to the victim’s room, standing just inches away as the meal was handed over."},{name:"Friend",info:"He had visited earlier but left long before the food arrived, with no further contact afterward."}],answer:"Waiter",explanation:"The poison was in the food, and only the waiter delivered it directly, giving him the opportunity to carry out the murder.",hints:["Poison consumed","Food involved","Who delivered it?"]},
+{title:"Library Case",bg:"./pics/library.png",story:"The silence of the library was broken by the thud of a falling body. The professor lay lifeless among scattered papers, his glasses cracked beneath him. There were no wounds, no signs of struggle — just a slow, calculated death. Hours earlier, he had been working closely with a few individuals. By the time the poison took effect, the killer was already gone, leaving behind nothing but suspicion and a locked room.",suspects:[{name:"Student",info:"He met the professor briefly for academic discussion but left shortly after, maintaining minimal interaction."},{name:"Assistant",info:"He worked closely with the professor, handling his files, water, and personal belongings throughout the evening."},{name:"Librarian",info:"She managed the library but had almost no direct contact with the professor during his final hours."}],answer:"Assistant",explanation:"The assistant had prolonged close contact and access to the professor’s belongings, allowing him to poison him earlier without suspicion.",hints:["Given earlier","Close contact","Handled belongings"]},
+{title:"Mansion Murder",bg:"./pics/house.png",story:"Thunder roared as lightning revealed a horrifying sight inside the mansion. The man lay dead in his study, blood trickling from his mouth, his expression twisted in shock. The doors were locked, and windows sealed tight. No outsider could have entered. Yet the murder was undeniable. Among those inside, someone had both the motive and the nerve to execute such a cold-blooded act.",suspects:[{name:"Wife",info:"She had been alone with the victim earlier and stood to inherit his entire fortune after his death."},{name:"Servant",info:"He was busy in the kitchen during the incident and claims he never left his duties."},{name:"Guest",info:"He was staying overnight but insists he heard nothing unusual during the storm."}],answer:"Wife",explanation:"The wife had the strongest motive and direct access, and the locked room indicates the killer was someone inside.",hints:["Motive","Inside job","Who benefits?"]},
+{title:"Secret Lab Crime",bg:"./pics/lab.png",story:"Alarms echoed through the laboratory as the scientist’s body was discovered near a shattered console. Sparks flickered, and the smell of burnt circuits filled the air. Security logs showed tampering during restricted hours. The death wasn’t accidental — it was precise, planned, and executed using the lab’s own systems. Only someone with deep knowledge could manipulate everything so flawlessly.",suspects:[{name:"Scientist",info:"A colleague who worked nearby but lacked both motive and access to override systems."},{name:"Technician",info:"Responsible for maintaining all systems, with full control over security and access logs."},{name:"Guard",info:"Monitored entry but relied entirely on automated systems he couldn’t control."}],answer:"Technician",explanation:"The technician had the knowledge and access to manipulate systems and cover his tracks.",hints:["System control","Logs tampered","Who has access?"]},
+{title:"Office Night Case",bg:"./pics/Office night.png",story:"The office was eerily quiet, but something was wrong. The safe had been emptied, and security cameras had mysteriously gone offline. There were no signs of forced entry, suggesting the thief knew exactly what they were doing. Whoever committed this crime didn’t just steal money — they erased evidence with precision.",suspects:[{name:"Employee",info:"He stayed late but had no access to surveillance or the safe’s security system."},{name:"Manager",info:"He had access to the safe but left early, far before the incident occurred."},{name:"Security Guard",info:"He was in charge of monitoring cameras and had complete control over the surveillance system."}],answer:"Security Guard",explanation:"The guard could disable cameras and move freely, making him the only one capable of committing the theft unnoticed.",hints:["Cameras off","Who controls security?","Inside access"]},
+{title:"Snow Cabin Mystery",bg:"./pics/snow.png",story:"The frozen silence of the mountains was shattered by a chilling discovery. A man lay dead in the snow, his body stiff and lifeless. Strangely, there were no footprints around him — only his own leading to the spot. It was as if the killer vanished into thin air. But such perfection often hides a carefully staged illusion.",suspects:[{name:"Friend",info:"He was with the victim earlier but claims he left before the storm intensified."},{name:"Owner",info:"He knew the cabin and terrain in detail and had experience navigating the snow."},{name:"Victim",info:"There was no indication of self-harm or suicidal intent."}],answer:"Owner",explanation:"The owner staged the scene and used his knowledge of the terrain to erase evidence and mislead investigators.",hints:["Staged scene","No footprints trick","Who knows area?"]},
+{title:"Train Murder",bg:"./pics/Train.png",story:"The rhythmic sound of the train was suddenly interrupted by chaos. A passenger collapsed after taking a sip of tea, his body convulsing violently before going still. No one else was affected, and the train had not stopped. The poison had to be delivered directly — and quickly.",suspects:[{name:"Vendor",info:"He moved through compartments selling tea, personally handing cups to passengers."},{name:"Passenger",info:"He sat nearby but had no interaction with the victim’s food or drink."},{name:"Ticket Checker",info:"He verified tickets but never handled consumables."}],answer:"Vendor",explanation:"The poison was in the tea, and only the vendor served it directly to the victim.",hints:["Poison in tea","Who served it?","Direct interaction"]}
+];
+
+let currentCaseIndex = 0;
+let currentCase;
+let selectedAccusation = "";
+let currentInterrogationTarget = null;
+let isCorrect = false;
+
+window.onload = () => {
+  document.getElementById("bg").style.backgroundImage = "url('./pics/open.png')";
+};
+
+function startGame() {
+  let start = document.getElementById("startScreen");
+  start.style.opacity = "0";
+  setTimeout(() => {
+    start.style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+    document.getElementById("bg").style.opacity = "0.2";
+  }, 1000);
+  document.body.classList.remove("landing");
+  loadCase();
+}
+
+function loadCase() {
+  currentCase = cases[currentCaseIndex];
+  
+  document.getElementById("bg").style.backgroundImage = `url('${currentCase.bg}')`;
+  document.getElementById("caseTitle").innerText = currentCase.title;
+  document.getElementById("story").innerText = currentCase.story;
+  
+  let html = "";
+  let chatHtml = `<span style="font-size:12px; color:#aaa; margin-top:5px;">Select Suspect:</span>`;
+  
+  currentCase.suspects.forEach(opt => {
+    html += `<button class="suspect-btn" onclick="selectAccusation('${opt.name}')">${opt.name}</button>`;
+    chatHtml += `<button class="chat-suspect-btn" onclick="setInterrogationTarget('${opt.name}')">${opt.name}</button>`;
+  });
+  
+  document.getElementById("options").innerHTML = html;
+  document.getElementById("suspectSelector").innerHTML = chatHtml;
+  
+  selectedAccusation = "";
+  currentInterrogationTarget = null;
+  document.getElementById("botMessages").innerHTML = `<div class="system-msg">Select a suspect above to begin interrogation.</div>`;
+}
+
+function selectAccusation(name) {
+  selectedAccusation = name;
+  document.querySelectorAll("#options button").forEach(b => b.classList.remove("selected"));
+  event.target.classList.add("selected");
+}
+
+function setInterrogationTarget(name) {
+  currentInterrogationTarget = currentCase.suspects.find(s => s.name === name);
+  
+  document.querySelectorAll('.chat-suspect-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.innerText === name);
+  });
+  
+  let box = document.getElementById("botMessages");
+  box.innerHTML += `<div class="system-msg">--- You are now interrogating the ${name} ---</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+
+function checkAnswer() {
+  if (!selectedAccusation) return alert("You must select a suspect to accuse first!");
+
+  const resultOverlay = document.getElementById("resultOverlay");
+  const resultBox = document.getElementById("resultBox");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultDesc = document.getElementById("resultDesc");
+  const resultBtn = document.getElementById("resultBtn");
+
+  resultOverlay.style.display = "flex";
+
+  if (selectedAccusation === currentCase.answer) {
+    resultBox.className = "result-box correct";
+    resultTitle.innerText = "Case Solved!";
+    resultDesc.innerHTML = `<p>You accurately identified the ${currentCase.answer}.</p>
+                            <p style="color:#c9a86a; margin-top:15px; font-style:italic;">"${currentCase.explanation}"</p>`;
+    resultBtn.innerText = "Solve the Next Case";
+    isCorrect = true;
+  } else {
+    resultBox.className = "result-box wrong";
+    resultTitle.innerText = "Wrong Accusation";
+    resultDesc.innerHTML = `<p>The ${selectedAccusation} was innocent. The real killer slipped away.</p>`;
+    resultBtn.innerText = "Retry Case";
+    isCorrect = false;
+  }
+}
+
+function closeResult() {
+  document.getElementById("resultOverlay").style.display = "none";
+  if (isCorrect) {
+    currentCaseIndex++;
+    if (currentCaseIndex >= cases.length) {
+      alert("🎉 Incredible work, Detective! You have solved all the cases.");
+      currentCaseIndex = 0;
+    }
+    loadCase();
+  }
+}
+
+document.getElementById("resultBtn").addEventListener("click", closeResult);
+
+function toggleChat() {
+  let bot = document.getElementById("chatBot");
+  bot.style.display = (bot.style.display === "flex") ? "none" : "flex";
+}
+
+function typeText(element, text, speed = 20) {
+  element.textContent = ""; 
+  let i = 0;
+  function typing() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i); 
+      i++;
+      setTimeout(typing, speed);
+    }
+  }
+  typing();
+}
+
+async function sendMessage() {
+  if (!currentInterrogationTarget) {
+    alert("Please select a suspect from the top of the chat to interrogate first.");
+    return;
+  }
+  if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+    alert("You need to enter your API key in the code first!");
+    return;
+  }
+
+  let input = document.getElementById("userInput");
+  let text = input.value;
+  if (!text) return;
+
+  let box = document.getElementById("botMessages");
+
+  let userMsg = document.createElement("div");
+  userMsg.className = "user-msg";
+  userMsg.innerText = text;
+  box.appendChild(userMsg);
+  input.value = "";
+
+  let botMsg = document.createElement("div");
+  botMsg.className = "bot-msg";
+  box.appendChild(botMsg);
+
+  let dots = 0;
+  let typingInterval = setInterval(() => {
+    botMsg.innerText = "Thinking" + ".".repeat(dots % 4);
+    dots++;
+  }, 300);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const systemPrompt = `You are playing a role in a detective murder mystery game.
+Roleplay Instructions:
+1. You are NOT an AI assistant. You are the suspect named '${currentInterrogationTarget.name}'.
+2. The user is the Detective interrogating you.
+3. Act defensive, nervous, arrogant, or helpful depending on what a ${currentInterrogationTarget.name} would naturally act like in this situation. 
+4. DO NOT explicitly confess to the murder, even if the user pushes you. 
+5. Answer questions evasively but provide indirect clues that align ONLY with your Alibi/Info. Do not invent new facts.
+6. Keep responses very short and conversational (max 2 sentences).
+
+Case Background:
+${currentCase.story}
+
+Your Alibi/Info:
+${currentInterrogationTarget.info}`;
+
+    const payload = {
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
+      },
+      contents: [{
+        parts: [{ text: text }]
+      }]
+    };
+
+   let res = await fetch("https://your-render-url.onrender.com/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    message: text,
+    systemPrompt: systemPrompt
+  })
+});
+
+    let data = await res.json();
+    clearInterval(typingInterval);
+    
+    let replyText = "⚠️ Suspect refused to speak.";
+    if (data.candidates && data.candidates[0].content.parts[0].text) {
+        replyText = data.candidates[0].content.parts[0].text;
+    }
+    
+    typeText(botMsg, replyText);
+  } catch (err) {
+    clearInterval(typingInterval);
+    botMsg.innerText = "⚠️ Connection to interrogation room lost.";
+    console.error(err);
+  }
+  
+  setTimeout(()=> { box.scrollTop = box.scrollHeight; }, 1000);
+}
+
+document.getElementById("userInput").addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+</script>
+</body>
+</html>
