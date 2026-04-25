@@ -448,13 +448,15 @@ h3 {
   </div>
 </div>
 
+<div id="resultOverlay">
+  <div id="resultBox" class="result-box">
+    <h2 id="resultTitle" class="result-title"></h2>
+    <p id="resultDesc" class="result-desc"></p>
+    <button id="resultBtn" class="result-btn">Continue</button>
+  </div>
+</div>
+
 <script>
-// ==========================================
-// ⚠️ PUT YOUR GEMINI API KEY HERE 
-// ==========================================
-const GEMINI_API_KEY = ""; 
-
-
 const cases = [
 {title:"Flight Murder",bg:"./pics/Fatal incident on an airplane aisle.png",story:"The cabin lights flickered as a sudden scream echoed through the silent aircraft. A passenger lay slumped in his seat, his lips turning pale, a half-finished glass of juice slipping from his trembling hands. Within seconds, his body went lifeless, sending panic across the aisle. Blood vessels in his eyes had burst, indicating a fast-acting toxin. Moments before his death, only a few people had interacted with him. With the plane sealed mid-air, the killer had to be someone onboard — someone who struck without being noticed.",suspects:[{name:"Air Hostess",info:"She was moving through the aisle, calmly serving drinks. Witnesses saw her hand the victim a glass just moments before he collapsed, and she was the last known person to interact with him."},{name:"Passenger",info:"Sitting beside the victim, he claims he was asleep. However, turbulence had just occurred, making it unlikely for anyone to remain completely unaware."},{name:"Pilot",info:"Locked inside the cockpit throughout the flight, he had no physical access to passengers or their food and drinks."}],answer:"Air Hostess",explanation:"The poison was delivered through the drink, and only the air hostess served it directly. Her close interaction gave her the perfect chance to administer it unnoticed.",hints:["Poison entered through drink","Who served him?","Focus on direct contact"]},
 {title:"Hotel Room Mystery",bg:"./pics/modern hotel room.png",story:"The room was silent, yet the air felt heavy with something sinister. A businessman was found sprawled on the floor, his face frozen in terror, veins darkened beneath his skin. There were no signs of forced entry, and the door was locked from inside. The only clue — a half-eaten meal on the table. Toxicology reports confirmed lethal poison in his system. With no one entering after dinner, the killer had already done their job before the door ever closed.",suspects:[{name:"Manager",info:"He handled bookings and approvals but never physically entered the room that night. His involvement remained administrative."},{name:"Waiter",info:"He delivered the food directly to the victim’s room, standing just inches away as the meal was handed over."},{name:"Friend",info:"He had visited earlier but left long before the food arrived, with no further contact afterward."}],answer:"Waiter",explanation:"The poison was in the food, and only the waiter delivered it directly, giving him the opportunity to carry out the murder.",hints:["Poison consumed","Food involved","Who delivered it?"]},
@@ -499,7 +501,7 @@ function loadCase() {
   let chatHtml = `<span style="font-size:12px; color:#aaa; margin-top:5px;">Select Suspect:</span>`;
   
   currentCase.suspects.forEach(opt => {
-    html += `<button class="suspect-btn" onclick="selectAccusation('${opt.name}')">${opt.name}</button>`;
+    html += `<button class="suspect-btn" onclick="selectAccusation('${opt.name}', this)">${opt.name}</button>`;
     chatHtml += `<button class="chat-suspect-btn" onclick="setInterrogationTarget('${opt.name}')">${opt.name}</button>`;
   });
   
@@ -511,10 +513,12 @@ function loadCase() {
   document.getElementById("botMessages").innerHTML = `<div class="system-msg">Select a suspect above to begin interrogation.</div>`;
 }
 
-function selectAccusation(name) {
+function selectAccusation(name, buttonEl) {
   selectedAccusation = name;
   document.querySelectorAll("#options button").forEach(b => b.classList.remove("selected"));
-  event.target.classList.add("selected");
+  if (buttonEl) {
+    buttonEl.classList.add("selected");
+  }
 }
 
 function setInterrogationTarget(name) {
@@ -593,8 +597,9 @@ async function sendMessage() {
     alert("Please select a suspect from the top of the chat to interrogate first.");
     return;
   }
-  if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-    alert("You need to enter your API key in the code first!");
+
+  if (window.location.protocol === "file:") {
+    alert("Chat requires the backend server. Open the game at http://localhost:3000 instead of opening index.html directly.");
     return;
   }
 
@@ -622,8 +627,6 @@ async function sendMessage() {
   box.scrollTop = box.scrollHeight;
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
     const systemPrompt = `You are playing a role in a detective murder mystery game.
 Roleplay Instructions:
 1. You are NOT an AI assistant. You are the suspect named '${currentInterrogationTarget.name}'.
@@ -639,16 +642,7 @@ ${currentCase.story}
 Your Alibi/Info:
 ${currentInterrogationTarget.info}`;
 
-    const payload = {
-      systemInstruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: [{
-        parts: [{ text: text }]
-      }]
-    };
-
-   let res = await fetch("https://the-final-clue.onrender.com/chat",  {
+   let res = await fetch("/chat",  {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -656,6 +650,21 @@ ${currentInterrogationTarget.info}`;
     systemPrompt: systemPrompt
   })
 });
+
+    if (!res.ok) {
+      let errorText = "Interrogation failed.";
+      try {
+        const errorPayload = await res.json();
+        const detailsText = typeof errorPayload.details === "string"
+          ? errorPayload.details
+          : (errorPayload.details ? JSON.stringify(errorPayload.details) : "");
+        errorText = errorPayload.details
+          ? `${errorPayload.error || "Error"}: ${detailsText}`
+          : (errorPayload.error || errorPayload.message || errorText);
+      } catch (_) {
+      }
+      throw new Error(errorText);
+    }
 
     let data = await res.json();
     clearInterval(typingInterval);
@@ -668,7 +677,7 @@ ${currentInterrogationTarget.info}`;
     typeText(botMsg, replyText);
   } catch (err) {
     clearInterval(typingInterval);
-    botMsg.innerText = "⚠️ Connection to interrogation room lost.";
+    botMsg.innerText = `⚠️ ${err.message || "Connection to interrogation room lost."}`;
     console.error(err);
   }
   
